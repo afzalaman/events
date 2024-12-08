@@ -3,6 +3,8 @@ import { NextResponse } from "next/server";
 import stripe from "stripe";
 
 
+console.log('I am here');
+
 export async function POST(request: Request) {
   const body = await request.text();
 
@@ -21,6 +23,7 @@ export async function POST(request: Request) {
   if (eventType === 'payment_intent.succeeded') {
     const {id, metadata, amount} = event.data.object;
     // Handle successful payment
+    console.log('PaymentIntent was successful!', id, metadata, amount);
     const newOrder = await createOrder({
       stripeId: id,
       totalAmount: amount ? (amount / 100).toFixed(2) : '0',

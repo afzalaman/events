@@ -14,7 +14,7 @@ export const checkoutOrder = async (order: CheckoutOrderParams) => {
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
   const price = order.isFree ? 0 : Number(order.price) * 100;
-
+  let redirectPath: string | null = null
   try {
     const session = await stripe.checkout.sessions.create({
       line_items: [
@@ -37,10 +37,13 @@ export const checkoutOrder = async (order: CheckoutOrderParams) => {
       success_url: `${process.env.NEXT_PUBLIC_SERVER_URL}/profile`,
       cancel_url: `${process.env.NEXT_PUBLIC_SERVER_URL}/events/${order.eventId}`,
     });
-
-    redirect(session.url!);
-  } catch (error) {
+    redirectPath = session.url
+  }
+  catch (error) {
     handleError(error);
+  }
+  finally{
+    redirect(redirectPath!)
   }
 };
 
