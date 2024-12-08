@@ -1,45 +1,37 @@
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+export const preferredRegion = "auto";
+
 import { createOrder } from "@/lib/actions/order.actions";
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2024-04-10",
-});
+// Instantiate Stripe
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: "2024-04-10" });
 
-export const config = {
-  api: {
-    bodyParser: false, // Ensure raw body for Stripe signature
-  },
-};
-
+// POST Handler
 export async function POST(request: Request) {
-  const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET!;
   const sig = request.headers.get("stripe-signature") as string;
+  const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET!;
+
+  const body = await getRawBody(request);
 
   let event: Stripe.Event;
-
-  // Parse raw body for signature verification
-  const body = await getRawBody(request);
 
   try {
     event = stripe.webhooks.constructEvent(body, sig, endpointSecret);
   } catch (err: any) {
-    console.error("Stripe Webhook Error:", err.message);
+    console.error("Webhook signature verification failed:", err.message);
     return NextResponse.json({ message: "Invalid signature" }, { status: 400 });
   }
 
-  // Handle the event
-  const eventType = event.type;
-
-  if (eventType === "checkout.session.completed") {
+  // Handle event type
+  if (event.type === "checkout.session.completed") {
     const session = event.data.object as Stripe.Checkout.Session;
-
-    // Extract metadata
     const { eventId, buyerId } = session.metadata!;
     const totalAmount = session.amount_total ? (session.amount_total / 100).toFixed(2) : "0";
 
     try {
-      // Create the order in MongoDB
       const newOrder = await createOrder({
         stripeId: session.id,
         totalAmount,
@@ -55,11 +47,10 @@ export async function POST(request: Request) {
     }
   }
 
-  // Return a response for unsupported event types
   return NextResponse.json({ received: true }, { status: 200 });
 }
 
-// Helper function to parse raw body
+// Helper to parse raw body
 async function getRawBody(request: Request): Promise<Buffer> {
   const reader = request.body?.getReader();
   const chunks: Uint8Array[] = [];
