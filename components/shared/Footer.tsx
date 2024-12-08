@@ -9,7 +9,7 @@ const Footer = () => {
           <Image src="/assets/images/logo.svg" alt="logo" width={128} height={38} />
         </Link>
 
-        <p>&copy; {new Date().getUTCFullYear()} Evently. All Rights reserved.</p>
+        <p>&copy; {new Date().getUTCFullYear()} Eventastic by ALI. All Rights reserved.</p>
       </div>
     </footer>
   );
