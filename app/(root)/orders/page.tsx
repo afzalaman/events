@@ -62,6 +62,28 @@ const Orders = async ({ searchParams }: SearchParamProps) => {
           </tbody>
         </table>
       </section>
+
+
+      {/* MongoDB Chart using Iframe */}
+      <section className="wrapper mt-8">
+  <div className="bg-white p-6 rounded-lg shadow">
+    <h4 className="text-xl font-semibold mb-4">Orders Analytics</h4>
+    <div className="w-full aspect-[16/9] relative">
+      <iframe
+        style={{
+          background: '#F1F5F4',
+          border: 'none',
+          borderRadius: '2px',
+          boxShadow: '0 2px 10px 0 rgba(70, 76, 79, .2)',
+        }}
+        className="absolute top-0 left-0 w-full h-full"
+        src="https://charts.mongodb.com/charts-project-0-uqbawbz/embed/dashboards?id=e38fc9f4-d302-4c6b-bdb6-55aba629b1fd&theme=light&autoRefresh=true&maxDataAge=1800&showTitleAndDesc=true&scalingWidth=scale&scalingHeight=scale"
+      ></iframe>
+    </div>
+  </div>
+</section>
+
+
     </>
   )
 }
