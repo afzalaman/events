@@ -3,12 +3,16 @@ import { getOrdersByEvent } from '@/lib/actions/order.actions'
 import { formatDateTime, formatPrice } from '@/lib/utils'
 import { SearchParamProps } from '@/types'
 import { OrderItem } from '@/lib/database/models/order.model'
+import EmailAttendeesForm from '@/components/shared/EmailAttendeesForm'
 
 const Orders = async ({ searchParams }: SearchParamProps) => {
   const eventId = (searchParams?.eventId as string) || ''
   const searchText = (searchParams?.query as string) || ''
 
   const orders = await getOrdersByEvent({ eventId, searchString: searchText })
+  // Get unique attendee emails
+  const attendeeEmails = orders?.map((order: OrderItem) => order.buyer.email).filter(Boolean) || [];
+  const uniqueEmails = Array.from(new Set(attendeeEmails)) as string[];
 
   return (
     <>
@@ -48,7 +52,7 @@ const Orders = async ({ searchParams }: SearchParamProps) => {
                       style={{ boxSizing: 'border-box' }}>
                       <td className="min-w-[250px] py-4 text-primary-500">{row._id}</td>
                       <td className="min-w-[200px] flex-1 py-4 pr-4">{row.eventTitle}</td>
-                      <td className="min-w-[150px] py-4">{row.buyer}</td>
+                      <td className="min-w-[150px] py-4">{row.buyer.firstName} {row.buyer.lastName}</td>
                       <td className="min-w-[100px] py-4">
                         {formatDateTime(row.createdAt).dateTime}
                       </td>
@@ -61,29 +65,39 @@ const Orders = async ({ searchParams }: SearchParamProps) => {
             )}
           </tbody>
         </table>
+
+        {/* Only show contact attendees section if there are orders */}
+        {orders && orders.length > 0 && (
+          <div className="wrapper mt-8">
+            <h2 className="h3-bold mb-4">Contact Attendees</h2>
+            <EmailAttendeesForm 
+              eventTitle={orders[0]?.eventTitle || ''} 
+              attendeeEmails={uniqueEmails}
+            />
+          </div>
+        )}
       </section>
 
-
-      {/* MongoDB Chart using Iframe */}
-      <section className="wrapper mt-8">
-  <div className="bg-white p-6 rounded-lg shadow">
-    <h4 className="text-xl font-semibold mb-4">Orders Analytics</h4>
-    <div className="w-full aspect-[16/9] relative">
-      <iframe
-        style={{
-          background: '#F1F5F4',
-          border: 'none',
-          borderRadius: '2px',
-          boxShadow: '0 2px 10px 0 rgba(70, 76, 79, .2)',
-        }}
-        className="absolute top-0 left-0 w-full h-full"
-        src="https://charts.mongodb.com/charts-project-0-uqbawbz/embed/dashboards?id=e38fc9f4-d302-4c6b-bdb6-55aba629b1fd&theme=light&autoRefresh=true&maxDataAge=1800&showTitleAndDesc=true&scalingWidth=scale&scalingHeight=scale"
-      ></iframe>
-    </div>
-  </div>
-</section>
-
-
+      {/* Only show MongoDB Chart if there are orders */}
+      {orders && orders.length > 0 && (
+        <section className="wrapper mt-8">
+          <div className="bg-white p-6 rounded-lg shadow">
+            <h4 className="text-xl font-semibold mb-4">Orders Analytics</h4>
+            <div className="w-full aspect-[16/9] relative">
+              <iframe
+                style={{
+                  background: '#F1F5F4',
+                  border: 'none',
+                  borderRadius: '2px',
+                  boxShadow: '0 2px 10px 0 rgba(70, 76, 79, .2)',
+                }}
+                className="absolute top-0 left-0 w-full h-full"
+                src="https://charts.mongodb.com/charts-project-0-uqbawbz/embed/dashboards?id=e38fc9f4-d302-4c6b-bdb6-55aba629b1fd&theme=light&autoRefresh=true&maxDataAge=1800&showTitleAndDesc=true&scalingWidth=scale&scalingHeight=scale"
+              ></iframe>
+            </div>
+          </div>
+        </section>
+      )}
     </>
   )
 }

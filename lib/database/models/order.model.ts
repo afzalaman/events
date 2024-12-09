@@ -12,6 +12,7 @@ export interface IOrder extends Document {
     _id: string;
     firstName: string;
     lastName: string;
+    email: string;
   };
 }
 
@@ -21,7 +22,12 @@ export type OrderItem = {
   createdAt: Date;
   eventTitle: string;
   eventId: string;
-  buyer: string;
+  buyer: {
+    _id: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+  };
 };
 
 const OrderSchema = new Schema({

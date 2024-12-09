@@ -102,13 +102,23 @@ export async function getOrdersByEvent({ searchString, eventId }: GetOrdersByEve
           eventTitle: '$event.title',
           eventId: '$event._id',
           buyer: {
-            $concat: ['$buyer.firstName', ' ', '$buyer.lastName'],
-          },
+            firstName: '$buyer.firstName',
+            lastName: '$buyer.lastName',
+            email: '$buyer.email'
+          }
         },
       },
       {
         $match: {
-          $and: [{ eventId: eventObjectId }, { buyer: { $regex: RegExp(searchString, 'i') } }],
+          $and: [
+            { eventId: eventObjectId },
+            {
+              $or: [
+                { 'buyer.firstName': { $regex: RegExp(searchString, 'i') } },
+                { 'buyer.lastName': { $regex: RegExp(searchString, 'i') } }
+              ]
+            }
+          ],
         },
       },
     ]);
