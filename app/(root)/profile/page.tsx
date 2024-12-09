@@ -3,6 +3,8 @@ import { Button } from '@/components/ui/button';
 import { getEventsByUser } from '@/lib/actions/event.actions';
 import { getOrdersByUser } from '@/lib/actions/order.actions';
 import { IOrder } from '@/lib/database/models/order.model';
+import Search from '@/components/shared/Search';
+import CategoryFilter from '@/components/shared/CategoryFilter';
 import { SearchParamProps } from '@/types';
 import { auth } from '@clerk/nextjs';
 import Link from 'next/link';
@@ -14,11 +16,18 @@ const ProfilePage = async ({ searchParams }: SearchParamProps) => {
 
   const ordersPage = Number(searchParams?.ordersPage) || 1;
   const eventsPage = Number(searchParams?.eventsPage) || 1;
+  const searchText = (searchParams?.query as string) || '';
+  const category = (searchParams?.category as string) || '';
 
   const orders = await getOrdersByUser({ userId, page: ordersPage });
 
   const orderedEvents = orders?.data.map((order: IOrder) => order.event) || [];
-  const organizedEvents = await getEventsByUser({ userId, page: eventsPage });
+  const organizedEvents = await getEventsByUser({ 
+    userId, 
+    page: eventsPage,
+    query: searchText,
+    category
+  });
 
   return (
     <>
@@ -57,6 +66,12 @@ const ProfilePage = async ({ searchParams }: SearchParamProps) => {
       </section>
 
       <section className="wrapper my-8">
+      <div className="flex w-full flex-col gap-5 md:flex-row mb-8">
+          <Search placeholder="Search events..." />
+          <CategoryFilter />
+        </div>
+
+
         <Collection
           data={organizedEvents?.data}
           emptyTitle="No events have been created yet"

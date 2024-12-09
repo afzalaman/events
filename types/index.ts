@@ -67,6 +67,8 @@ export type GetEventsByUserParams = {
   userId: string;
   limit?: number;
   page: number;
+  query?: string;
+  category?: string;
 };
 
 export type GetRelatedEventsByCategoryParams = {
